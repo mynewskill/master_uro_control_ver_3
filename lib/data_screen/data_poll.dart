@@ -4,11 +4,9 @@ import 'package:master_uro_control_ver_3/theme_constants.dart';
 String dropDownValue = "Мужской";
 List<String> sexList = const ["Мужской", "Женский"];
 
-PageController _pageController = PageController(
-    initialPage: 0
-);
+PageController _pageController = PageController(initialPage: 0);
 
-Column firstScreenPool() {
+Widget firstScreenPool() {
   return Column(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -29,21 +27,18 @@ Column firstScreenPool() {
       Flexible(
         flex: 1,
         child: Container(
-          decoration: BoxDecoration(
-              color: Colors.yellowAccent
-          ),
+          decoration: BoxDecoration(color: Colors.yellowAccent),
           child: Flexible(
             flex: 1,
             child: PageView(
               controller: _pageController,
-
               children: [
-                Text("Example", style: TextStyle(
-                    backgroundColor: Colors.pinkAccent
-                ),),
+                Text(
+                  "Example",
+                  style: TextStyle(backgroundColor: Colors.pinkAccent),
+                ),
                 Text("WOW"),
                 // showMe(),
-
               ],
             ),
           ),
@@ -52,4 +47,3 @@ Column firstScreenPool() {
     ],
   );
 }
-

@@ -3,6 +3,8 @@ import 'package:master_uro_control_ver_3/data_screen/poll_statefull.dart';
 import 'package:master_uro_control_ver_3/theme_constants.dart';
 import 'package:flutter/services.dart';
 
+import 'theme_constants.dart';
+
 void main() {
   runApp(UroControlMain());
 }
@@ -11,6 +13,8 @@ class UroControlMain extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     // Theme widget may quick change style for one component
     // Example:
     //
@@ -37,8 +41,8 @@ class UroControlMain extends StatelessWidget {
       theme: ThemeData(
         primaryColor: primaryColor,
         accentColor: secondaryColor,
-        // fontFamily: mainTextFamily, // value from theme_constants.dart
-
+        fontFamily: mainTextFamily, // value from theme_constants.dart
+        buttonColor: primaryColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: 'UroControl Home Page'),
@@ -58,9 +62,263 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  PageController _pageController = PageController(
+      initialPage: 0
+  );
+  List<String> sexList = const ["Мужской", "Женский"];
+  String dropDownValue = "Мужской";
+
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("Scaffold render...");
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          // hide keyboard when tap outside input text field
+        },
+        child: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.topRight,
+                  colors: const [primaryColor, secondaryColor]
+              )
+          ),
 
-    return PollScreen();
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const AppNameHeader(), // app name string
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    padding: symHorizontalPad40,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0)
+                        )
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [ // Table inner white bg
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Text(
+                              putYourData, // Header string
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          flex: 10,
+                          child: Container(
+                            // decoration: BoxDecoration(
+                            //     color: Colors.yellowAccent
+                            // ),
+                            child: PageView(
+                              controller: _pageController,
+                              children: [
+                                firstScreenData(),
+                                Text("Hello World!")
+                              ],
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                            child: MaterialButton(
+                              onPressed: () async {
+                                // prefs = await SharedPreferences.getInstance();
+                                // await prefs.clear();
+                              },
+                              color: Color(0xff4BAAC5),
+                              textColor: Colors.white,
+                              minWidth: double.infinity,
+                              // infinity get all width of its parent
+                              padding: EdgeInsets.symmetric(vertical: 10.0),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(89.0)
+                              ),
+                              // padding: EdgeInsets.fromLTRB(80.0, 15.0, 80.0, 15.0),
+                              child: Text(continueButton, style: TextStyle(
+                                  fontSize: 18.0
+                              ),),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  firstScreenData() {
+
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            // decoration: BoxDecoration(
+            //     color: Colors.grey
+            // ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: onlyBottomPad8,
+                  child: _fieldPool(label: "Вес", hint: "кг"),
+                ),
+                Padding(
+                  padding: onlyBottomPad8,
+                  child: _fieldPool(label: "Рост", hint: "см"),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 20.0),
+                  child: FormField<String>(
+                      builder: (FormFieldState<
+                          String> state) {
+                        return InputDecorator(
+                            decoration: InputDecoration(
+                                disabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        style: BorderStyle
+                                            .none)),
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: primaryColor
+                                    )
+                                ),
+                                labelText: "Пол",
+                                errorStyle: TextStyle(
+                                    color: Colors
+                                        .redAccent,
+                                    fontSize: 16.0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius
+                                      .circular(5.0),
+                                  // borderSide: BorderSide(
+                                  //   color: primaryColor
+                                  // )
+                                )
+                            ),
+                            isEmpty: dropDownValue ==
+                                'Выберите из списка',
+
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<
+                                  String>(
+                                value: dropDownValue,
+                                hint: Text("Выберите из списка"),
+                                isDense: true,
+                                isExpanded: true,
+                                onChanged: (value) {
+                                  setState(() {
+                                    state.didChange(
+                                        value);
+                                    setState(() {
+                                      dropDownValue =
+                                          value;
+                                    });
+                                  });
+                                },
+                                items: sexList.map<
+                                    DropdownMenuItem<
+                                        String>>((
+                                    String val) {
+                                  return DropdownMenuItem<
+                                      String>(
+                                    value: val,
+                                    child: Text(val),
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                        );}
+                  ),
+                ),
+                Padding(
+                  padding: onlyBottomPad8,
+                  child: _fieldPool(label: "Возраст", txtInputAction: TextInputAction.done),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  TextField _fieldPool({String label, TextEditingController controllerName,
+    shaPrefValue, String hint='', int maxLen=3, bool focus=false, txtInputAction = TextInputAction.next}) {
+
+    return TextField(
+      autofocus: focus,
+      textInputAction: txtInputAction,
+      keyboardType: TextInputType.number,
+      textAlign: TextAlign.center,
+      // controller: controllerName,
+      maxLength: maxLen,
+      onSubmitted: (value) async {
+        // final prefs = await SharedPreferences.getInstance();
+        // prefs.setString(shaPrefValue, value);
+        // //TODO: make check if value isSet or not
+      },
+      decoration: InputDecoration(
+        // border: OutlineInputBorder(),
+          labelText: label,
+          // labelStyle: TextStyle.,
+          helperText: hint,
+          suffix: Text(hint.toString()),
+      ),
+    );
+  }
+
+}
+
+class AppNameHeader extends StatelessWidget {
+  const AppNameHeader();
+  @override
+  Widget build(BuildContext context) {
+    print("AppNameHeader render...");
+    return Container(
+        child: Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: symVerticalPad10,
+              child: Text(
+                appName,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: mainTextFamily,
+                    fontSize: 40.0),
+              ),
+            )
+        )
+    );
   }
 }
