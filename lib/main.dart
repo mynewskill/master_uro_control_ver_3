@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:master_uro_control_ver_3/data_screen/poll_statefull.dart';
 import 'package:master_uro_control_ver_3/theme_constants.dart';
 import 'package:flutter/services.dart';
@@ -65,11 +66,44 @@ class _MyHomePageState extends State<MyHomePage> {
   PageController _pageController = PageController(
       initialPage: 0
   );
+
+  TextEditingController _weightController;
+  TextEditingController _tallController;
+  TextEditingController _ageController;
+
+  int _currentPage = 1;
+  int _lengthPages;
+  List<Widget> _pages;
+
   List<String> sexList = const ["Мужской", "Женский"];
   String dropDownValue = "Мужской";
 
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  getAge() async {
+    final SharedPreferences prefs = await _prefs;
+    final String val = prefs.getString('age') ?? '36';
+    return val;
+  }
+
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _pages = [firstScreenData(), Text("Второй")];
+    _lengthPages = _pages.length;
+    _weightController = TextEditingController();
+    _ageController = TextEditingController(text: "123");
+    _tallController = TextEditingController();
+  }
+
   void dispose() {
     _pageController.dispose();
+    _ageController.dispose();
+    _tallController.dispose();
+    _weightController.dispose();
     super.dispose();
   }
 
@@ -130,36 +164,53 @@ class _MyHomePageState extends State<MyHomePage> {
                             // decoration: BoxDecoration(
                             //     color: Colors.yellowAccent
                             // ),
-                            child: PageView(
+                            child: PageView.builder(
+                              scrollDirection: Axis.horizontal,
                               controller: _pageController,
-                              children: [
-                                firstScreenData(),
-                                Text("Hello World!")
-                              ],
+                              itemCount: _lengthPages,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentPage = index+1;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return _pages[index];
+                              },
+                              // children: [
+                              //   firstScreenData(),
+                              //   Text("Hello World!")
+                              // ],
                             ),
                           ),
                         ),
                         Flexible(
                           flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-                            child: MaterialButton(
-                              onPressed: () async {
-                                // prefs = await SharedPreferences.getInstance();
-                                // await prefs.clear();
-                              },
-                              color: Color(0xff4BAAC5),
-                              textColor: Colors.white,
-                              minWidth: double.infinity,
-                              // infinity get all width of its parent
-                              padding: EdgeInsets.symmetric(vertical: 10.0),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(89.0)
-                              ),
-                              // padding: EdgeInsets.fromLTRB(80.0, 15.0, 80.0, 15.0),
-                              child: Text(continueButton, style: TextStyle(
-                                  fontSize: 18.0
-                              ),),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                                  child: MaterialButton(
+                                    onPressed: () async {
+                                      // prefs = await SharedPreferences.getInstance();
+                                      // await prefs.clear();
+                                    },
+                                    color: Color(0xff4BAAC5),
+                                    textColor: Colors.white,
+                                    minWidth: double.infinity,
+                                    // infinity get all width of its parent
+                                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(89.0)
+                                    ),
+                                    // padding: EdgeInsets.fromLTRB(80.0, 15.0, 80.0, 15.0),
+                                    child: Text(continueButton, style: TextStyle(
+                                        fontSize: 18.0
+                                    ),),
+                                  ),
+                                ),
+                                Text("Шаг $_currentPage из $_lengthPages")
+                              ],
                             ),
                           ),
                         )
@@ -175,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  firstScreenData() {
+  Widget firstScreenData() {
 
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
@@ -190,15 +241,15 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Padding(
                   padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Вес", hint: "кг"),
+                  child: _fieldPool(label: "Вес", shaPrefValue: "weight", hint: "кг"),
                 ),
                 Padding(
                   padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Рост", hint: "см"),
+                  child: _fieldPool(label: "Рост", shaPrefValue: "tall", hint: "см"),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
-                      top: 20.0),
+                      top: 20.0, bottom: 10.0),
                   child: FormField<String>(
                       builder: (FormFieldState<
                           String> state) {
@@ -263,7 +314,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Padding(
                   padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Возраст", txtInputAction: TextInputAction.done),
+                  child: _fieldPool(label: "Возраст",
+                      txtInputAction: TextInputAction.done,
+                  shaPrefValue: "age", controllerName: _ageController),
                 )
               ],
             ),
@@ -281,18 +334,18 @@ class _MyHomePageState extends State<MyHomePage> {
       textInputAction: txtInputAction,
       keyboardType: TextInputType.number,
       textAlign: TextAlign.center,
-      // controller: controllerName,
+      controller: controllerName,
       maxLength: maxLen,
       onSubmitted: (value) async {
-        // final prefs = await SharedPreferences.getInstance();
-        // prefs.setString(shaPrefValue, value);
+        final SharedPreferences prefs = await _prefs;
+        prefs.setString(shaPrefValue, value);
         // //TODO: make check if value isSet or not
       },
       decoration: InputDecoration(
         // border: OutlineInputBorder(),
           labelText: label,
           // labelStyle: TextStyle.,
-          helperText: hint,
+          // helperText: hint,
           suffix: Text(hint.toString()),
       ),
     );
