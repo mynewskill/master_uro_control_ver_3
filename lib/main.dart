@@ -67,9 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
       initialPage: 0
   );
 
-  TextEditingController _weightController;
-  TextEditingController _tallController;
-  TextEditingController _ageController;
+  TextEditingController _weightController = TextEditingController();
+  TextEditingController _tallController = TextEditingController();
+  TextEditingController _ageController = TextEditingController();
 
   int _currentPage = 1;
   int _lengthPages;
@@ -80,12 +80,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  getAge() async {
+  getValues () async {
     final SharedPreferences prefs = await _prefs;
-    final String val = prefs.getString('age') ?? '36';
-    return val;
+    _ageController.text = prefs.getString('age') ?? '';
+    _tallController.text = prefs.getString('tall') ?? '';
+    _weightController.text = prefs.getString('weight') ?? '';
   }
-
 
 
   @override
@@ -94,9 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _pages = [firstScreenData(), Text("Второй")];
     _lengthPages = _pages.length;
-    _weightController = TextEditingController();
-    _ageController = TextEditingController(text: "123");
-    _tallController = TextEditingController();
+    getValues();
   }
 
   void dispose() {
@@ -241,11 +239,13 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Padding(
                   padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Вес", shaPrefValue: "weight", hint: "кг"),
+                  child: _fieldPool(label: "Вес", shaPrefValue: "weight", controllerName: _weightController,
+                      hint: "кг"),
                 ),
                 Padding(
                   padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Рост", shaPrefValue: "tall", hint: "см"),
+                  child: _fieldPool(label: "Рост", shaPrefValue: "tall", controllerName: _tallController,
+                      hint: "см"),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
@@ -316,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: onlyBottomPad8,
                   child: _fieldPool(label: "Возраст",
                       txtInputAction: TextInputAction.done,
-                  shaPrefValue: "age", controllerName: _ageController),
+                      shaPrefValue: "age", controllerName: _ageController),
                 )
               ],
             ),
@@ -343,10 +343,10 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       decoration: InputDecoration(
         // border: OutlineInputBorder(),
-          labelText: label,
-          // labelStyle: TextStyle.,
-          // helperText: hint,
-          suffix: Text(hint.toString()),
+        labelText: label,
+        // labelStyle: TextStyle.,
+        // helperText: hint,
+        suffix: Text(hint.toString()),
       ),
     );
   }
