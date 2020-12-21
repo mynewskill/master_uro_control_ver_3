@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentPage = 1;
   int _lengthPages;
   List<Widget> _pages;
-  String _buttonText = "Продолжить";
+  String _buttonText = continueButton;
 
   @override
   void initState() {
@@ -139,9 +139,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 setState(() {
                                   _currentPage = ++index;
                                   if(_currentPage == 2) {
-                                      _buttonText = "Начать пользоваться";
+                                      _buttonText = startButton;
                                   } else {
-                                    _buttonText = "Продолжить";
+                                    _buttonText = continueButton;
                                   }
                                 });
                               },
