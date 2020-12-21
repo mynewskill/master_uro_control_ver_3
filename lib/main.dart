@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:master_uro_control_ver_3/data_screen/poll_statefull.dart';
 import 'package:master_uro_control_ver_3/theme_constants.dart';
 import 'package:flutter/services.dart';
-
+import 'package:master_uro_control_ver_3/data_screen/data_poll.dart';
 import 'theme_constants.dart';
 
 void main() {
@@ -31,7 +29,7 @@ class UroControlMain extends StatelessWidget {
     // );
 
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Uro Control app',
       initialRoute: '/',
       routes: {
         // '/': (context) => UroControlMain(),
@@ -62,31 +60,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   PageController _pageController = PageController(
       initialPage: 0
   );
 
-  TextEditingController _weightController = TextEditingController();
-  TextEditingController _tallController = TextEditingController();
-  TextEditingController _ageController = TextEditingController();
-
   int _currentPage = 1;
   int _lengthPages;
   List<Widget> _pages;
-
-  List<String> sexList = const ["Мужской", "Женский"];
-  String dropDownValue = "Мужской";
-
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
-  getValues () async {
-    final SharedPreferences prefs = await _prefs;
-    _ageController.text = prefs.getString('age') ?? '';
-    _tallController.text = prefs.getString('tall') ?? '';
-    _weightController.text = prefs.getString('weight') ?? '';
-  }
-
+  String _buttonText = "Продолжить";
 
   @override
   void initState() {
@@ -95,13 +76,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _pages = [firstScreenData(), Text("Второй")];
     _lengthPages = _pages.length;
     getValues();
+    // getDropDownValue();
   }
 
   void dispose() {
     _pageController.dispose();
-    _ageController.dispose();
-    _tallController.dispose();
-    _weightController.dispose();
+    ageController.dispose();
+    tallController.dispose();
+    weightController.dispose();
     super.dispose();
   }
 
@@ -142,20 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [ // Table inner white bg
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Text(
-                              putYourData, // Header string
-                              style: TextStyle(
-                                color: primaryColor,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
+                        PutYourDataString(),
                         Flexible(
                           flex: 10,
                           child: Container(
@@ -168,7 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               itemCount: _lengthPages,
                               onPageChanged: (index) {
                                 setState(() {
-                                  _currentPage = index+1;
+                                  _currentPage = ++index;
+                                  if(_currentPage == 2) {
+                                      _buttonText = "Начать пользоваться";
+                                  } else {
+                                    _buttonText = "Продолжить";
+                                  }
                                 });
                               },
                               itemBuilder: (context, index) {
@@ -187,11 +161,20 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                                  padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
                                   child: MaterialButton(
-                                    onPressed: () async {
-                                      // prefs = await SharedPreferences.getInstance();
-                                      // await prefs.clear();
+                                    onPressed: () {
+                                      if (_pageController.initialPage == 0) {
+                                        saveFirstScreenData();
+                                        _pageController.nextPage(
+                                            duration: Duration(milliseconds: 600),
+                                        curve: Curves.easeInOutQuint);
+
+                                      } if(_pageController.initialPage == 1) {
+
+                                      } else {
+
+                                      }
                                     },
                                     color: Color(0xff4BAAC5),
                                     textColor: Colors.white,
@@ -202,12 +185,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                         borderRadius: BorderRadius.circular(89.0)
                                     ),
                                     // padding: EdgeInsets.fromLTRB(80.0, 15.0, 80.0, 15.0),
-                                    child: Text(continueButton, style: TextStyle(
+                                    child: Text(_buttonText, style: TextStyle(
                                         fontSize: 18.0
                                     ),),
                                   ),
                                 ),
-                                Text("Шаг $_currentPage из $_lengthPages")
+                                Text("Шаг $_currentPage из $_lengthPages",
+                                  style: TextStyle(
+                                      color: Colors.grey[600]
+                                  ),)
                               ],
                             ),
                           ),
@@ -223,155 +209,5 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
-  Widget firstScreenData() {
-
-    return SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            // decoration: BoxDecoration(
-            //     color: Colors.grey
-            // ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Вес", shaPrefValue: "weight", controllerName: _weightController,
-                      hint: "кг"),
-                ),
-                Padding(
-                  padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Рост", shaPrefValue: "tall", controllerName: _tallController,
-                      hint: "см"),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: 20.0, bottom: 10.0),
-                  child: FormField<String>(
-                      builder: (FormFieldState<
-                          String> state) {
-                        return InputDecorator(
-                            decoration: InputDecoration(
-                                disabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                        style: BorderStyle
-                                            .none)),
-                                enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: primaryColor
-                                    )
-                                ),
-                                labelText: "Пол",
-                                errorStyle: TextStyle(
-                                    color: Colors
-                                        .redAccent,
-                                    fontSize: 16.0),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius
-                                      .circular(5.0),
-                                  // borderSide: BorderSide(
-                                  //   color: primaryColor
-                                  // )
-                                )
-                            ),
-                            isEmpty: dropDownValue ==
-                                'Выберите из списка',
-
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<
-                                  String>(
-                                value: dropDownValue,
-                                hint: Text("Выберите из списка"),
-                                isDense: true,
-                                isExpanded: true,
-                                onChanged: (value) {
-                                  setState(() {
-                                    state.didChange(
-                                        value);
-                                    setState(() {
-                                      dropDownValue =
-                                          value;
-                                    });
-                                  });
-                                },
-                                items: sexList.map<
-                                    DropdownMenuItem<
-                                        String>>((
-                                    String val) {
-                                  return DropdownMenuItem<
-                                      String>(
-                                    value: val,
-                                    child: Text(val),
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                        );}
-                  ),
-                ),
-                Padding(
-                  padding: onlyBottomPad8,
-                  child: _fieldPool(label: "Возраст",
-                      txtInputAction: TextInputAction.done,
-                      shaPrefValue: "age", controllerName: _ageController),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  TextField _fieldPool({String label, TextEditingController controllerName,
-    shaPrefValue, String hint='', int maxLen=3, bool focus=false, txtInputAction = TextInputAction.next}) {
-
-    return TextField(
-      autofocus: focus,
-      textInputAction: txtInputAction,
-      keyboardType: TextInputType.number,
-      textAlign: TextAlign.center,
-      controller: controllerName,
-      maxLength: maxLen,
-      onSubmitted: (value) async {
-        final SharedPreferences prefs = await _prefs;
-        prefs.setString(shaPrefValue, value);
-        // //TODO: make check if value isSet or not
-      },
-      decoration: InputDecoration(
-        // border: OutlineInputBorder(),
-        labelText: label,
-        // labelStyle: TextStyle.,
-        // helperText: hint,
-        suffix: Text(hint.toString()),
-      ),
-    );
-  }
-
 }
 
-class AppNameHeader extends StatelessWidget {
-  const AppNameHeader();
-  @override
-  Widget build(BuildContext context) {
-    print("AppNameHeader render...");
-    return Container(
-        child: Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: symVerticalPad10,
-              child: Text(
-                appName,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: mainTextFamily,
-                    fontSize: 40.0),
-              ),
-            )
-        )
-    );
-  }
-}
