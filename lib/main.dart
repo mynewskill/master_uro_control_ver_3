@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:master_uro_control_ver_3/theme_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:master_uro_control_ver_3/data_screen/data_poll.dart';
-import 'theme_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'dart:developer';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // transparent status bar
+  ));
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
   runApp(UroControlMain());
 }
 
@@ -12,8 +20,7 @@ class UroControlMain extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations(
-        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
     // Theme widget may quick change style for one component
     // Example:
     //
@@ -69,13 +76,15 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> _pages;
   String _buttonText = continueButton;
 
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _pages = [firstScreenData(), Text("Второй")];
+    _pages = [firstScreenData(), Text("Второй экран")];
     _lengthPages = _pages.length;
     getValues();
+
     // getDropDownValue();
   }
 
@@ -139,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 setState(() {
                                   _currentPage = ++index;
                                   if(_currentPage == 2) {
-                                      _buttonText = startButton;
+                                    _buttonText = startButton;
                                   } else {
                                     _buttonText = continueButton;
                                   }
@@ -160,36 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
-                                  child: MaterialButton(
-                                    onPressed: () {
-                                      if (_pageController.initialPage == 0) {
-                                        saveFirstScreenData();
-                                        _pageController.nextPage(
-                                            duration: Duration(milliseconds: 600),
-                                        curve: Curves.easeInOutQuint);
-
-                                      } if(_pageController.initialPage == 1) {
-
-                                      } else {
-
-                                      }
-                                    },
-                                    color: Color(0xff4BAAC5),
-                                    textColor: Colors.white,
-                                    minWidth: double.infinity,
-                                    // infinity get all width of its parent
-                                    padding: EdgeInsets.symmetric(vertical: 10.0),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(89.0)
-                                    ),
-                                    // padding: EdgeInsets.fromLTRB(80.0, 15.0, 80.0, 15.0),
-                                    child: Text(_buttonText, style: TextStyle(
-                                        fontSize: 18.0
-                                    ),),
-                                  ),
-                                ),
+                                PollButton(pController: _pageController, tButton: _buttonText,),
                                 Text("Шаг $_currentPage из $_lengthPages",
                                   style: TextStyle(
                                       color: Colors.grey[600]
